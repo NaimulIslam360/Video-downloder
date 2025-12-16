@@ -53,7 +53,14 @@ def index():
         uid = str(uuid.uuid4())
         output_template = f"{uid}.%(ext)s"
 
-        cmd = ["yt-dlp", "-o", output_template]
+        # yt-dlp base command with fallback options
+        cmd = [
+            "yt-dlp",
+            "--no-check-certificate",
+            "--no-warnings",
+            "--ignore-errors",
+            "-o", output_template
+        ]
 
         # MP3 download
         if format_type == "mp3":
@@ -62,9 +69,9 @@ def index():
         # MP4 download
         else:
             if quality == "best":
-                cmd += ["-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"]
+                cmd += ["-f", "bv*+ba/b"]
             else:
-                cmd += ["-f", f"bestvideo[height<={quality}]+bestaudio/best[height<={quality}]"]
+                cmd += ["-f", f"bv*[height<={quality}]+ba/b[height<={quality}]"]
 
         cmd.append(url)
 
