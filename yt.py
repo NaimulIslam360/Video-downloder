@@ -43,6 +43,10 @@ HTML = """
 def index():
     if request.method == "POST":
         url = request.form["url"]
+
+        # Clean URL (remove ?si= etc.)
+        url = url.split("?")[0]
+
         format_type = request.form["format"]
         quality = request.form["quality"]
 
@@ -51,8 +55,11 @@ def index():
 
         cmd = ["yt-dlp", "-o", output_template]
 
+        # MP3 download
         if format_type == "mp3":
             cmd += ["-x", "--audio-format", "mp3"]
+
+        # MP4 download
         else:
             if quality == "best":
                 cmd += ["-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"]
@@ -64,6 +71,7 @@ def index():
         try:
             subprocess.run(cmd, check=True)
 
+            # Find downloaded file
             for f in os.listdir():
                 if f.startswith(uid):
                     return send_file(f, as_attachment=True)
@@ -71,11 +79,11 @@ def index():
             return "Download failed"
 
         except Exception as e:
-            return str(e)
+            return f"Error: {str(e)}"
 
     return render_template_string(HTML)
 
+
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
